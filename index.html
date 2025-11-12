@@ -243,24 +243,19 @@
             console.error("An error occurred:", e.message);
         });
 
-        // -----------------------------------------------------------------
-        // 🚀 PWA Service Worker Registration - ADDED CODE HERE
-        // -----------------------------------------------------------------
+        // --- PWA Service Worker Registration - ADDED CODE HERE
         function registerServiceWorker() {
-            if ('serviceWorker' in navigator) {
-                // Wait until the window loads to prevent blocking the main thread
-                window.addEventListener('load', () => {
-                    // Register the service worker located at the root of the app
-                    navigator.serviceWorker.register('/sw.js')
-                    .then(reg => {
-                        console.log('Service Worker registered! Scope:', reg.scope);
-                    })
-                    .catch(err => {
-                        console.warn('Service Worker registration failed:', err);
-                    });
-                });
+        if ('serviceWorker' in navigator) {
+            // Wait until the window loads to prevent blocking the main thread
+            window.addEventListener('load', () => { // <--- THIS IS THE PROBLEM
+            // Register the service worker located at the root of the app
+            navigator.serviceWorker.register('/sw.js')
+            // ... rest of the code
+             });
             }
         }
+
+registerServiceWorker();
 
         registerServiceWorker();
         // --- Existing boilerplate variables below ---
