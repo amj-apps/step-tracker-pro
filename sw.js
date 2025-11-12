@@ -3,10 +3,12 @@ const CACHE_NAME = 'step-counter-v1';
 
 // List of files to cache during installation
 const FILES_TO_CACHE = [
-  '/', // The main HTML file
+  '/', 
   '/index.html',
   '/manifest.json',
-  '/icon-192.png', 
+  '/icon-192.png',
+  // 👇 ADD the external script's URL to be cached on install
+  'https://cdn.tailwindcss.com', 
 ];
 
 // 1. Install event: Caches the essential app shell assets
