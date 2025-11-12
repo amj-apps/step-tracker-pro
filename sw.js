@@ -6,9 +6,12 @@ const FILES_TO_CACHE = [
   '/', 
   '/index.html',
   '/manifest.json',
-  '/icon-192.png',
-  // 👇 ADD the external script's URL to be cached on install
+  '/icon-192.png', 
+  // 👇 ADD the external script's URL to be cached
   'https://cdn.tailwindcss.com', 
+  // Your code also uses an icon-512.png which is not explicitly linked in the HTML,
+  // but it should also be cached if it exists:
+  '/icon-512.png'
 ];
 
 // 1. Install event: Caches the essential app shell assets
