@@ -245,13 +245,20 @@
 
         // --- PWA Service Worker Registration - ADDED CODE HERE
         function registerServiceWorker() {
-        if ('serviceWorker' in navigator) {
-            // Wait until the window loads to prevent blocking the main thread
-            window.addEventListener('load', () => { // <--- THIS IS THE PROBLEM
-            // Register the service worker located at the root of the app
-            navigator.serviceWorker.register('/sw.js')
-            // ... rest of the code
-             });
+            if ('serviceWorker' in navigator) {
+                // Register the service worker immediately for best performance.
+                // The browser handles this in the background and it won't block the main thread.
+                navigator.serviceWorker.register('/sw.js')
+                .then(reg => {
+                    console.log('Service Worker registered! Scope:', reg.scope);
+                    // You might also want to check for an update on first load here
+                })
+                .catch(err => {
+                    // This is especially important for first-run failures!
+                    console.warn('Service Worker registration failed:', err);
+                });
+            } else {
+                console.log('Service Workers not supported in this browser.');
             }
         }
 
