@@ -248,7 +248,7 @@
             if ('serviceWorker' in navigator) {
                 // Register the service worker immediately for best performance.
                 // The browser handles this in the background and it won't block the main thread.
-                navigator.serviceWorker.register('/sw.js')
+                navigator.serviceWorker.register('sw.js')
                 .then(reg => {
                     console.log('Service Worker registered! Scope:', reg.scope);
                     // You might also want to check for an update on first load here
