@@ -64,6 +64,22 @@
             100% { box-shadow: 0 0 0 0 rgba(79, 70, 229, 0); }
         }
         
+        <div class="mt-8 flex justify-center space-x-6 p-4 bg-white rounded-xl shadow-lg">
+            
+            <div class="text-center">
+                <div id="distanceDisplay" class="text-2xl font-bold text-gray-800">0.00</div>
+                <div class="text-sm text-gray-500">Distance (km)</div>
+            </div>
+            
+            <div class="border-l border-gray-200"></div>
+
+            <div class="text-center">
+                <div id="durationDisplay" class="text-2xl font-bold text-gray-800">00:00:00</div>
+                <div class="text-sm text-gray-500">Duration</div>
+            </div>
+            
+        </div>
+
         .main-button {
             transition: all 0.15s ease-in-out;
         }
@@ -138,6 +154,36 @@
     // Initial call to display the time immediately
     updateDateTime();
     // --- END NEW REAL-TIME CLOCK LOGIC ---
+
+    // Element References
+    const distanceElement = document.getElementById('distanceDisplay');
+    const durationElement = document.getElementById('durationDisplay');
+
+    // NEW State Variables
+    let timerInterval = null; // Stores the setInterval ID for the duration clock
+    let durationSeconds = 0;  // Tracks total time spent walking
+
+    /**
+     * Formats total seconds into a clean HH:MM:SS string.
+     */
+    function formatDuration(totalSeconds) {
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = Math.floor(totalSeconds % 60);
+
+        const pad = (num) => String(num).padStart(2, '0');
+
+        return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+    }
+
+    /**
+     * Updates the duration every second.
+     */
+    function updateDurationDisplay() {
+        durationSeconds++;
+        durationElement.textContent = formatDuration(durationSeconds);
+    }
+    // --- END NEW DISTANCE AND DURATION LOGIC --- 
         
         // --- Core Logic ---
         // Sensor Constants
@@ -219,6 +265,8 @@
                 // Simple peak detection: We just need to register a significant change.
                 stepCount++;
                 stepsElement.textContent = stepCount;
+                const distanceKM = (stepCount * STEP_LENGTH_M) / 1000;
+                distanceElement.textContent = distanceKM.toFixed(2);
                 lastStepTime = timeNow;
             }
             // Update the last Z value for the next calculation
@@ -235,13 +283,22 @@
             if (shouldRun) {
                 // Start Tracking
                 window.addEventListener('devicemotion', handleDeviceMotion);
+                // NEW: Start the duration timer if it's not already running
+                if (!timerInterval) {
+                    timerInterval = setInterval(updateDurationDisplay, 1000); 
+                }
                 startButton.textContent = "Stop Tracking";
                 startButton.classList.remove('bg-primary');
                 startButton.classList.add('bg-red-500', 'hover:bg-red-600');
                 statusMessage.textContent = "Tracking active. Start walking!";
                 counterDisplay.classList.add('running');
                 isRunning = true;
-            } else {
+            } else {              
+                // NEW: Stop the duration timer
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
                 // Stop Tracking
                 window.removeEventListener('devicemotion', handleDeviceMotion);
                 startButton.textContent = "Start Tracking";
@@ -261,7 +318,13 @@
             if (isRunning) {
                 toggleCounting(false); // Stop tracking first
             }
+            // NEW: Ensure timer is stopped and reset duration variables
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
             stepCount = 0;
+            durationSeconds = 0;
             lastStepTime = 0;
             stepsElement.textContent = 0;
             statusMessage.textContent = "Counter reset. Press 'Start' to begin tracking.";
