@@ -329,7 +329,6 @@
         // --- PWA Service Worker Registration -
         function registerServiceWorker() {
             if ('serviceWorker' in navigator) {
-                // FIX 4: Changed absolute path to relative path
                 navigator.serviceWorker.register('./sw.js', { scope: './' })
                 .then(reg => {
                     console.log('Service Worker registered! Scope:', reg.scope);
