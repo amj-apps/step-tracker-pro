@@ -85,8 +85,9 @@
         </div>
 
         <div class="flex space-x-4">
-            <button id="startButton" onclick="requestSensorAccess()"
-                class="main-button w-full px-6 py-4 bg-primary text-white text-lg font-semibold rounded-xl shadow-lg hover:bg-secondary focus:outline-none focus:ring-4 focus:ring-primary/50 transition-colors duration-150">
+            
+           <button id="startButton" onclick="requestSensorAccess()"
+                class="main-button w-full px-6 py-4 bg-indigo-600 text-white text-lg font-semibold rounded-xl shadow-lg hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-600/50 transition-colors duration-150">
                 Start Tracking
             </button>
 
@@ -275,8 +276,8 @@
                     timerInterval = setInterval(updateDurationDisplay, 1000); 
                 }
                 startButton.textContent = "Stop Tracking";
-                startButton.classList.remove('bg-primary');
-                startButton.classList.add('bg-red-500', 'hover:bg-red-600');
+                startButton.classList.remove('bg-red-500', 'hover:bg-red-600');
+                startButton.classList.add('bg-primary', 'hover:bg-secondary');
                 statusMessage.textContent = "Tracking active. Start walking!";
                 counterDisplay.classList.add('running');
                 isRunning = true;
@@ -320,6 +321,20 @@
             console.log("Step counter reset.");
         }
 
+        function initializeButtons() {
+            // This function forces the Start button into its correct default state on load.
+            // Set 'Start Tracking' to the non-tracking appearance (bg-primary)
+            startButton.classList.remove('bg-red-500', 'hover:bg-red-600');
+            startButton.classList.add('bg-primary', 'hover:bg-secondary');
+            startButton.textContent = "Start Tracking";
+            
+            // Set status message
+            statusMessage.textContent = "Press 'Start' to begin tracking.";
+        }
+
+        // Ensure this line is called immediately after the DOM is ready:
+        document.addEventListener('DOMContentLoaded', initializeButtons);
+
         // Add a global error handler for unsupported features if necessary
 
         window.addEventListener('error', (e) => {
@@ -340,6 +355,11 @@
         }
 
         registerServiceWorker();
+        window.onload = function() {
+        // Ensure the button is styled purple/primary on load
+            startButton.classList.remove('bg-red-500', 'hover:bg-red-600');
+            startButton.classList.add('bg-primary', 'hover:bg-secondary');
+        };
         // --- Existing boilerplate variables below ---
         var appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         var firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};

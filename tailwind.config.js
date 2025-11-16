@@ -1,16 +1,15 @@
 // tailwind.config.js
 /** @type {import('tailwindcss').Config} */
+
+// tailwind.config.js
 module.exports = {
-  content: [
-    './*.html', // Tell Tailwind to scan all HTML files in the root folder
-  ],
+  // ...
   theme: {
     extend: {
       colors: {
-        'primary': '#4f46e5',
+        'primary': '#4f46e5', // This is your purple
         'secondary': '#6366f1',
       }
-    },
-  },
-  plugins: [],
+    }
+  }
 }

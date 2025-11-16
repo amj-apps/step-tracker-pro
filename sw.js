@@ -1,5 +1,5 @@
 // A static name for your cache
-const CACHE_NAME = 'step-counter-v1'; 
+const CACHE_NAME = 'step-counter-v5'; 
 
 // List of files to cache during installation
 const FILES_TO_CACHE = [
