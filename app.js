@@ -164,6 +164,7 @@ function handleDeviceMotion(event) {
     if (Math.abs(deltaZ) > ACCELERATION_THRESHOLD && (timeNow - lastStepTime) > STEP_DEBOUNCE_TIME) {
         stepCount++;
         if (navigator.vibrate) {
+            console.log("Attempting to VIBRATE..."); // <-- ADD THIS LINE
             navigator.vibrate(50); // Vibrate
         }
         stepsElement.textContent = stepCount;
