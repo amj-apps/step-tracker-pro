@@ -8,8 +8,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 280px;
-    width: 280px;
+    height: 200px;
+    width: 200px;
     margin: 0 auto;
     border-radius: 9999px; /* Full circle */
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
@@ -38,21 +38,11 @@ body {
     transform: scale(0.98);
 }
 
-#steps {
-    /* The literal value for Tailwind's text-9xl */
-    font-size: 6rem !important; 
-    /* This ensures the number doesn't clip or shrink due to line height */
-    line-height: 1 !important; 
-    /* Ensures the color is white/visible */
-    color: white !important; 
-}
-
-/* Ensure the .counter-display rule is still here and correct */
 .counter-display {
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 280px;
-    width: 280px;
+    height: 200px;
+    width: 200px;
     
 }

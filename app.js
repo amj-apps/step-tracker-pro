@@ -19,6 +19,7 @@ const notSupportedBox = document.getElementById('notSupportedBox');
 const distanceElement = document.getElementById('distanceDisplay');
 const durationElement = document.getElementById('durationDisplay');
 const historyLog = document.getElementById('historyLog'); 
+const stepSound = document.getElementById('stepSound');
 
 // State Variables (Defined once, globally)
 let stepCount = 0;
@@ -167,6 +168,13 @@ function handleDeviceMotion(event) {
             console.log("Attempting to VIBRATE..."); // <-- ADD THIS LINE
             navigator.vibrate(50); // Vibrate
         }
+        if (stepSound) {
+            stepSound.currentTime = 0; // Reset the sound to the beginning
+            stepSound.play().catch(e => {
+                // Catches errors if the browser blocks auto-play
+                console.warn("Audio play blocked by browser:", e);
+            });
+        }
         stepsElement.textContent = stepCount;
         const distanceKM = (stepCount * STEP_LENGTH_M) / 1000;
         distanceElement.textContent = distanceKM.toFixed(2);
@@ -230,8 +238,7 @@ function resetCounter() {
     stepsElement.textContent = 0;
     distanceElement.textContent = '0.00';
     durationElement.textContent = '00:00:00';
-    statusMessage.textContent = "Counter reset. Press 'Start' to begin tracking.";
-    console.log("Step counter reset.");
+    statusMessage.textContent = "Press 'Start' to begin tracking";
 }
 
 // ==========================================================
