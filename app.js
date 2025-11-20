@@ -4,7 +4,7 @@
 
 // Sensor and Calculation Constants
 const ACCELERATION_THRESHOLD = 1.25; 
-const STEP_DEBOUNCE_TIME = 200;
+const STEP_DEBOUNCE_TIME = 300;
 const STEP_LENGTH_M = 0.76;
 
 // Element References (Defined once, globally)
