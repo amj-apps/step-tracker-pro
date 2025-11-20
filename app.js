@@ -1,11 +1,19 @@
-// ==========================================================
-// == GLOBAL CONSTANTS, REFERENCES, AND STATE VARIABLES ====
-// ==========================================================
+// Function to load a setting from localStorage or return a default value
+function loadSetting(key, defaultValue) {
+    // Tries to get the value from the phone's local storage
+    const value = localStorage.getItem(key);
+    // If the value exists, convert it to a number. Otherwise, use the default.
+    return value !== null ? parseFloat(value) : defaultValue;
+}
 
-// Sensor and Calculation Constants
-const ACCELERATION_THRESHOLD = 2; 
-const STEP_DEBOUNCE_TIME = 200;
-const STEP_LENGTH_M = 0.76;
+// Define the tuned defaults
+const DEFAULT_THRESHOLD = 2.0; 
+const DEFAULT_STEP_LENGTH = 0.76;
+
+// Load Customizable Constants
+const ACCELERATION_THRESHOLD = loadSetting('accelThreshold', DEFAULT_THRESHOLD); 
+const STEP_DEBOUNCE_TIME = 200; // This remains fixed
+const STEP_LENGTH_M = loadSetting('stepLength', DEFAULT_STEP_LENGTH);
 
 // Element References (Defined once, globally)
 const dateTimeDisplay = document.getElementById('dateTimeDisplay');
