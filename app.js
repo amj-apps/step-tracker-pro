@@ -3,7 +3,7 @@
 // ==========================================================
 
 // Sensor and Calculation Constants
-const ACCELERATION_THRESHOLD = 1.75; 
+const ACCELERATION_THRESHOLD = 2; 
 const STEP_DEBOUNCE_TIME = 200;
 const STEP_LENGTH_M = 0.76;
 
