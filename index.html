@@ -4,47 +4,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Step Counter App</title>
-    <link rel="manifest" href="./manifest.json" /> 
-    
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
-    <link rel="apple-touch-icon" href="./icon-192.png" /> 
+    <title>Step Counter Pro - Pedometer</title>
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom Styles - Merged from custom.css */
+        body {
+            background-color: #f3f4f6;
+            font-family: 'Inter', sans-serif;
+        }
 
-    <link rel="stylesheet" href="./output.css"> 
-    <link rel="stylesheet" href="./custom.css?v=1.4">  
+        /* Main Counter Display */
+        .counter-display {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 280px;
+            width: 280px;
+            margin: 0 auto;
+            border-radius: 9999px; /* Full circle */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            /* PRO THEME: Darker, bolder indigo gradient */
+            background-image: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+            color: white;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        /* Pulse effect when running */
+        .counter-display.running {
+            box-shadow: 0 0 0 10px rgba(55, 48, 163, 0.3);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(55, 48, 163, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(55, 48, 163, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(55, 48, 163, 0); }
+        }
+
+        /* Settings Toggle Switch Styling */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #4f46e5;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #4f46e5;
+        }
+    </style>
 </head>
-    
+
 <body class="p-4 flex flex-col min-h-screen">
-    <div class="max-w-sm w-full mx-auto">
+    <div class="max-w-md w-full mx-auto">
 
-        <h1 class="text-3xl font-extrabold text-center text-gray-800 mb-4 mt-2">👣 Step Tracker</h1>
+        <!-- HEADER BLOCK: Includes Settings Button and Title -->
+        <div class="flex justify-between items-center mb-4 mt-2">
+            <!-- Settings Button (Left side) -->
+            <button id="settingsButton" onclick="openSettings()"
+                    class="text-gray-500 hover:text-indigo-600 focus:outline-none p-1 transition-colors duration-150">
+                <!-- Gear Icon (Lucide settings) -->
+                <svg class="w-7 h-7" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.78 1.46a2 2 0 0 0 .73 2.73l.15.08a2 2 0 0 1 1 1.74v.18a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.78-1.46a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.18a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+            <h1 class="text-3xl font-extrabold text-center text-gray-800">👣 Step Tracker</h1>
+            <div class="w-7 h-7"></div> <!-- Spacer -->
+        </div>
+
         <div id="dateTimeDisplay" class="text-center text-sm font-medium text-gray-500 mb-4"></div>
-        <div id="counterDisplay" class="counter-display mb-6 running">
-            <span id="steps" class="text-6xl font-bold">0</span>
+
+        <!-- Sensor Status Indicator -->
+        <div class="flex justify-center items-center mb-4">
+            <span id="statusIndicator" class="h-3 w-3 rounded-full mr-2 bg-gray-400"></span>
+            <span id="statusMessage" class="text-sm font-semibold text-gray-600">Loading...</span>
         </div>
-        
-        <div class="mt-2 flex justify-center space-x-6 p-4 bg-white rounded-xl shadow-lg">
-            
+
+        <!-- Counter Display (Removed unnecessary 'running' class for initial state) -->
+        <div id="counterDisplay" class="counter-display mb-6">
+            <span id="steps" class="!text-7xl font-bold">0</span>
+        </div>
+
+        <!-- Secondary Stats -->
+        <div class="mt-4 flex justify-center space-x-6 p-4 bg-white rounded-xl shadow-lg">
             <div class="text-center">
-                <div id="distanceDisplay" class="text-2xl font-bold text-gray-800">0.00</div>
-                <div class="text-sm text-gray-500">Distance (km)</div>
+                <div id="distanceDisplay" class="text-xl font-bold text-indigo-600">0.00 km</div>
+                <p class="text-sm font-medium text-gray-600">Distance</p>
             </div>
-            
-            <div class="border-l border-gray-200"></div>
-
             <div class="text-center">
-                <div id="durationDisplay" class="text-2xl font-bold text-gray-800">00:00:00</div>
-                <div class="text-sm text-gray-500">Duration</div>
+                <div id="durationDisplay" class="text-xl font-bold text-indigo-600">00:00:00</div>
+                <p class="text-sm font-medium text-gray-600">Duration</p>
             </div>
-            
         </div>
 
-        <div class="text-center mb-2 h-4 mt-2"> 
-            <p id="statusMessage" class="text-sm text-gray-600">Press 'Start' to begin tracking</p>
-        </div>
-
-        <div class="flex space-x-4 mt-1">       
+        <!-- Control Buttons -->
+        <div class="flex space-x-4 mt-6">
            <button id="startButton" onclick="requestSensorAccess()"
                 class="main-button w-full px-6 py-4 bg-indigo-600 text-white text-lg font-semibold rounded-xl shadow-lg hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-600/50 transition-colors duration-150">
                 Start Tracking
@@ -56,6 +106,7 @@
             </button>
         </div>
 
+        <!-- Warnings/Errors -->
         <div id="warningBox" class="mt-4 p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 rounded-lg hidden">
             <p class="font-bold">Permissions Required</p>
             <p class="text-sm">Please allow motion sensor access when prompted to enable step counting.</p>
@@ -66,17 +117,566 @@
             <p class="text-sm">Device motion sensors are not supported on this browser or device.</p>
         </div>
 
-        <h2 class="text-sm text-gray-600 mt-6 mb-4 text-center">Past Activity (Last 7 Days)</h2>
-
+        <!-- History Log -->
+        <h2 class="text-xl font-bold text-gray-800 mt-8 mb-4 text-center">Past Activity (Last 7 Days)</h2>
         <div id="historyLog" class="bg-white p-4 rounded-xl shadow-lg border border-gray-100">
             <p class="text-gray-500 text-sm italic">No history yet. Start tracking steps!</p>
         </div>
 
+
+        <!-- Settings Modal (Initially hidden) -->
+        <div id="settingsModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+            <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-sm m-4 transform transition-all duration-300 scale-95 opacity-0" id="settingsPanel">
+                <h3 class="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">Settings</h3>
+
+                <!-- 1. Acceleration Threshold -->
+                <div class="mb-6">
+                    <label for="thresholdInput" class="block text-sm font-medium text-gray-700 mb-2">
+                        Step Sensitivity (Threshold: <span id="thresholdValue">2.0</span> G)
+                    </label>
+                    <input type="range" id="thresholdInput" min="1.0" max="4.0" step="0.1" value="2.0"
+                           class="w-full h-2 bg-indigo-100 rounded-lg appearance-none cursor-pointer range-lg">
+                    <p class="text-xs text-gray-500 mt-1">Lower value = higher sensitivity (more steps).</p>
+                </div>
+
+                <!-- 2. Step Length -->
+                <div class="mb-6">
+                    <label for="stepLengthInput" class="block text-sm font-medium text-gray-700 mb-2">
+                        Stride Length (meters)
+                    </label>
+                    <input type="number" id="stepLengthInput" min="0.5" max="1.5" step="0.05" value="0.76"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                    <p class="text-xs text-gray-500 mt-1">Used to calculate distance (Average: 0.76m).</p>
+                </div>
+
+                <!-- 3. Audio Feedback Toggle -->
+                <div class="flex justify-between items-center mb-4 p-3 bg-gray-50 rounded-lg">
+                    <span class="text-sm font-medium text-gray-700">Audio Feedback</span>
+                    <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                        <input type="checkbox" id="audioToggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer" checked/>
+                        <label for="audioToggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                    </div>
+                </div>
+
+                <!-- 4. Vibration Feedback Toggle -->
+                <div class="flex justify-between items-center mb-6 p-3 bg-gray-50 rounded-lg">
+                    <span class="text-sm font-medium text-gray-700">Vibration Feedback</span>
+                    <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                        <input type="checkbox" id="vibrationToggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer" checked/>
+                        <label for="vibrationToggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                    </div>
+                </div>
+
+                <!-- Save and Close Button -->
+                <button onclick="saveSettingsAndApply()"
+                        class="w-full px-4 py-3 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition-colors">
+                    Save Settings & Apply
+                </button>
+
+            </div>
+        </div>
     </div>
 
-    <audio id="stepSound" src="./ring.wav" preload="auto"></audio>
+    <!-- Audio element for step feedback (single file to satisfy CSP, hosted on external CDN) -->
+    <audio id="stepSound" src="https://storage.googleapis.com/codeskulptor-assets/week7-bounce.mp3" preload="auto"></audio>
 
-    <script src="./app.js"></script>
-    
+    <script>
+        // =========================================================
+        // == CONFIGURATION & STATE =================================
+        // =========================================================
+
+        // Settings from localStorage (read/updated dynamically)
+        let ACCELERATION_THRESHOLD = 2.0;
+        let STEP_LENGTH_M = 0.76;
+        let isAudioEnabled = true;
+        let isVibrationEnabled = true;
+
+        // Step Detection Constants
+        const STEP_DEBOUNCE_TIME = 200; // ms to prevent double counting
+        const GRAVITY_G = 9.81;
+
+        // Core State
+        let isRunning = false;
+        let totalSteps = 0;
+        let lastStepTime = 0;
+        let durationSeconds = 0;
+        let timerInterval = null;
+
+        // Sensor State
+        let lastAcceleration = 0; // Tracks last magnitude of acceleration for peak detection
+        let sensorListener = null;
+
+        // Element References
+        const counterDisplay = document.getElementById('counterDisplay'); // Added reference
+        const stepsDisplay = document.getElementById('steps');
+        const distanceDisplay = document.getElementById('distanceDisplay');
+        const durationDisplay = document.getElementById('durationDisplay');
+        const startButton = document.getElementById('startButton');
+        const historyLog = document.getElementById('historyLog');
+        const dateTimeDisplay = document.getElementById('dateTimeDisplay');
+        const statusMessage = document.getElementById('statusMessage');
+        const statusIndicator = document.getElementById('statusIndicator');
+        const warningBox = document.getElementById('warningBox');
+        const notSupportedBox = document.getElementById('notSupportedBox');
+        const settingsModal = document.getElementById('settingsModal');
+        const settingsPanel = document.getElementById('settingsPanel');
+        const stepSound = document.getElementById('stepSound');
+
+        // =========================================================
+        // == UTILITY FUNCTIONS =====================================
+        // =========================================================
+
+        /**
+         * Loads a setting from localStorage and parses it as a float/number.
+         */
+        function loadNumberSetting(key, defaultValue) {
+            const value = localStorage.getItem(key);
+            return value !== null ? parseFloat(value) : defaultValue;
+        }
+
+        /**
+         * Loads a boolean setting from localStorage, checking for the string "true".
+         */
+        function loadBooleanSetting(key, defaultValue) {
+            const value = localStorage.getItem(key);
+            if (value === null) return defaultValue;
+            return value === "true";
+        }
+
+        /**
+         * Loads the total steps and duration from localStorage.
+         */
+        function loadAppState() {
+            totalSteps = loadNumberSetting('totalSteps', 0);
+            durationSeconds = loadNumberSetting('durationSeconds', 0);
+            updateDisplays();
+        }
+
+        /**
+         * Saves the current step count and duration to localStorage.
+         */
+        function saveAppState() {
+            localStorage.setItem('totalSteps', totalSteps.toString());
+            localStorage.setItem('durationSeconds', durationSeconds.toString());
+        }
+
+        /**
+         * Loads history array from localStorage.
+         */
+        function loadHistory() {
+            const historyJson = localStorage.getItem('stepHistory');
+            return historyJson ? JSON.parse(historyJson) : [];
+        }
+
+        /**
+         * Returns a clean YYYY-MM-DD date string for history lookup.
+         */
+        function getDateString(date = new Date()) {
+            return date.toISOString().split('T')[0];
+        }
+
+        // Formats total seconds into a clean HH:MM:SS string.
+        function formatDuration(totalSeconds) {
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = Math.floor(totalSeconds % 60);
+            const pad = (num) => String(num).padStart(2, '0');
+            return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+        }
+
+        // =========================================================
+        // == UI UPDATE FUNCTIONS ===================================
+        // =========================================================
+
+        /**
+         * Updates all derived metric displays (distance, duration).
+         */
+        function updateDisplays() {
+            // Update Steps (formatted with comma separators)
+            stepsDisplay.textContent = totalSteps.toLocaleString();
+
+            // Calculate Distance (steps * length / 1000)
+            const distanceKM = (totalSteps * STEP_LENGTH_M) / 1000;
+            distanceDisplay.textContent = `${distanceKM.toFixed(2)} km`;
+
+            // Update Duration
+            durationDisplay.textContent = formatDuration(durationSeconds);
+        }
+
+        /**
+         * Updates the UI status based on the app's running state.
+         */
+        function updateStatusUI() {
+            if (isRunning) {
+                // Add running class to counter for pulse effect
+                counterDisplay.classList.add('running'); 
+                statusIndicator.className = 'h-3 w-3 rounded-full mr-2 bg-green-500 animate-pulse';
+                statusMessage.textContent = 'Tracking...';
+                startButton.textContent = 'Stop Tracking';
+                startButton.className = startButton.className.replace('bg-indigo-600', 'bg-red-500').replace('hover:bg-indigo-700', 'hover:bg-red-600').replace('focus:ring-indigo-600/50', 'focus:ring-red-500/50');
+            } else {
+                // Remove running class
+                counterDisplay.classList.remove('running'); 
+                statusIndicator.className = 'h-3 w-3 rounded-full mr-2 bg-gray-400';
+                statusMessage.textContent = `Ready. Steps tracked: ${totalSteps.toLocaleString()}`;
+                startButton.textContent = 'Start Tracking';
+                startButton.className = startButton.className.replace('bg-red-500', 'bg-indigo-600').replace('hover:bg-red-600', 'hover:bg-indigo-700').replace('focus:ring-red-500/50', 'focus:ring-indigo-600/50');
+            }
+        }
+
+        /**
+         * Renders the history log items.
+         */
+        function renderHistory() {
+            const history = loadHistory();
+            historyLog.innerHTML = ''; // Clear existing content
+
+            if (history.length === 0) {
+                historyLog.innerHTML = '<p class="text-gray-500 text-sm italic">No history yet. Start tracking steps!</p>';
+                return;
+            }
+
+            // Render history items in reverse order (newest first)
+            history.slice().reverse().forEach(item => {
+                const dateObj = new Date(item.date);
+                const displayDate = dateObj.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+
+                const div = document.createElement('div');
+                div.className = 'flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0';
+                div.innerHTML = `
+                    <span class="font-medium text-gray-700">${displayDate}</span>
+                    <span class="font-bold text-indigo-700">${item.steps.toLocaleString()} steps</span>
+                `;
+                historyLog.appendChild(div);
+            });
+        }
+
+        // REAL-TIME CLOCK
+        function updateDateTime() {
+            const now = new Date();
+            const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const dateString = now.toLocaleDateString(undefined, dateOptions);
+            const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit' };
+            const timeString = now.toLocaleTimeString(undefined, timeOptions);
+            dateTimeDisplay.innerHTML = `${dateString} | ${timeString}`;
+        }
+
+
+        // =========================================================
+        // == SENSOR LOGIC & STEP DETECTION =========================
+        // =========================================================
+
+        /**
+         * Handles the DeviceMotionEvent, performing peak detection for steps.
+         */
+        function deviceMotionListener(event) {
+            // Get linear acceleration in all axes (removing gravity influence)
+            // Note: If acceleration is null, use accelerationIncludingGravity and subtract the effect of gravity later.
+            const accel = event.acceleration || event.accelerationIncludingGravity;
+
+            if (!accel || (accel.x === null && accel.y === null && accel.z === null)) {
+                 // Sensor data is unavailable or null, stop tracking if running
+                 if(isRunning) {
+                    stopTracking();
+                    statusMessage.textContent = 'Tracking stopped: Sensor data lost.';
+                 }
+                 return;
+            }
+
+            const x = accel.x || 0;
+            const y = accel.y || 0;
+            const z = accel.z || 0;
+
+            // Calculate the magnitude of total acceleration
+            const magnitude = Math.sqrt(x * x + y * y + z * z);
+            const currentTime = Date.now();
+
+            // Step Detection Logic:
+            // 1. Check for a peak acceleration above the set threshold (in G, 1G = 9.81 m/s²)
+            // 2. Ensure enough time has passed since the last detected step (debounce)
+            // 
+            if (magnitude > ACCELERATION_THRESHOLD * GRAVITY_G &&
+                magnitude > lastAcceleration &&
+                (currentTime - lastStepTime) > STEP_DEBOUNCE_TIME) {
+
+                // Step detected!
+                totalSteps++;
+                lastStepTime = currentTime;
+
+                // Provide feedback
+                if (isAudioEnabled) {
+                    stepSound.currentTime = 0; // Rewind for quick replay
+                    stepSound.play().catch(e => console.error("Audio playback failed:", e));
+                }
+                if (isVibrationEnabled && navigator.vibrate) {
+                    navigator.vibrate(100); // Vibrate for 100ms
+                }
+
+                // Update UI and Persistence
+                updateDisplays();
+                saveAppState();
+            }
+
+            lastAcceleration = magnitude;
+        }
+
+        /**
+         * Core function to start the step tracking.
+         */
+        function startTracking() {
+            if (isRunning) return;
+
+            // 1. Check for API support
+            if (!window.DeviceMotionEvent) {
+                notSupportedBox.classList.remove('hidden');
+                statusMessage.textContent = 'Device Motion not supported.';
+                return;
+            }
+
+            // 2. Attach the listener and start the timer
+            sensorListener = deviceMotionListener;
+            window.addEventListener('devicemotion', sensorListener);
+            startTimer();
+
+            // 3. Update state and UI
+            isRunning = true;
+            updateStatusUI();
+            warningBox.classList.add('hidden');
+        }
+
+        /**
+         * Core function to stop the step tracking.
+         */
+        function stopTracking() {
+            if (!isRunning) return;
+
+            // 1. Stop the listener and timer
+            window.removeEventListener('devicemotion', sensorListener);
+            stopTimer();
+            sensorListener = null;
+
+            // 2. Save history (uses the current totalSteps for the day)
+            saveHistory(totalSteps);
+
+            // 3. Update state and UI
+            isRunning = false;
+            updateStatusUI();
+        }
+
+        /**
+         * Handles the click on the Start/Stop button, managing the iOS permission prompt.
+         */
+        async function requestSensorAccess() {
+            if (isRunning) {
+                stopTracking();
+                return;
+            }
+
+            // CRITICAL iOS 13+ PERMISSION LOGIC
+            if (typeof DeviceMotionEvent.requestPermission === 'function') {
+                try {
+                    const permissionState = await DeviceMotionEvent.requestPermission();
+                    if (permissionState === 'granted') {
+                        startTracking();
+                    } else {
+                        warningBox.classList.remove('hidden');
+                        statusMessage.textContent = 'Motion sensor access denied.';
+                    }
+                } catch (error) {
+                    console.error("Permission request error:", error);
+                    warningBox.classList.remove('hidden');
+                    statusMessage.textContent = 'Permission prompt failed. Try refreshing.';
+                }
+            } else {
+                // For Android or older browsers, permissions are usually granted by default
+                startTracking();
+            }
+        }
+
+
+        // =========================================================
+        // == TIMER LOGIC ===========================================
+        // =========================================================
+
+        function startTimer() {
+            if (timerInterval) return;
+            timerInterval = setInterval(() => {
+                durationSeconds++;
+                // Save duration every 10 seconds for persistence
+                if (durationSeconds % 10 === 0) {
+                    saveAppState();
+                }
+                updateDisplays();
+            }, 1000);
+        }
+
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+                saveAppState(); // Final save on stop
+            }
+        }
+
+        // =========================================================
+        // == HISTORY & RESET LOGIC =================================
+        // =========================================================
+
+        /**
+         * Saves the current step count to the daily history log.
+         * Runs when tracking is stopped.
+         */
+        function saveHistory(currentStepCount) {
+            if (currentStepCount === 0) return; // Don't save zero steps
+
+            const todayKey = getDateString();
+            let history = loadHistory();
+
+            // Find existing entry for today
+            const existingEntryIndex = history.findIndex(item => item.date === todayKey);
+
+            if (existingEntryIndex > -1) {
+                // Update existing entry (e.g., if tracking stopped and restarted later)
+                // Use a functional update to ensure correctness
+                history[existingEntryIndex].steps = currentStepCount;
+            } else {
+                // Add new entry
+                history.push({ date: todayKey, steps: currentStepCount });
+            }
+
+            // Keep only the last 7 entries for a clean display
+            history = history.slice(-7);
+
+            localStorage.setItem('stepHistory', JSON.stringify(history));
+
+            // After saving, re-render the history view
+            renderHistory();
+        }
+
+        /**
+         * Resets the current session counter and timer.
+         */
+        function resetCounter() {
+            if(isRunning) {
+                // If running, stop first to save the current session to history
+                stopTracking();
+            }
+
+            // Reset current session state
+            totalSteps = 0;
+            durationSeconds = 0;
+            lastAcceleration = 0;
+            
+            // Revert start button to initial state
+            startButton.textContent = 'Start Tracking';
+            startButton.className = startButton.className.replace('bg-red-500', 'bg-indigo-600').replace('hover:bg-red-600', 'hover:bg-indigo-700').replace('focus:ring-red-500/50', 'focus:ring-indigo-600/50');
+            
+            // Save reset state
+            saveAppState(); 
+            updateDisplays();
+            updateStatusUI();
+            
+            // Optional: Show a message
+            statusMessage.textContent = 'Counter reset. Ready to start.';
+        }
+
+        // =========================================================
+        // == SETTINGS LOGIC ========================================
+        // =========================================================
+
+        function loadSettings() {
+            ACCELERATION_THRESHOLD = loadNumberSetting('accelThreshold', 2.0);
+            STEP_LENGTH_M = loadNumberSetting('stepLength', 0.76);
+            isAudioEnabled = loadBooleanSetting('audioEnabled', true);
+            isVibrationEnabled = loadBooleanSetting('vibrationEnabled', true);
+        }
+
+        function initializeSettingsModal() {
+            // Load current values into the modal inputs
+            document.getElementById('thresholdInput').value = ACCELERATION_THRESHOLD;
+            document.getElementById('stepLengthInput').value = STEP_LENGTH_M;
+            document.getElementById('audioToggle').checked = isAudioEnabled;
+            document.getElementById('vibrationToggle').checked = isVibrationEnabled;
+            document.getElementById('thresholdValue').textContent = ACCELERATION_THRESHOLD.toFixed(1);
+
+            // Add event listener to dynamically update threshold display
+            document.getElementById('thresholdInput').addEventListener('input', (e) => {
+                document.getElementById('thresholdValue').textContent = parseFloat(e.target.value).toFixed(1);
+            });
+        }
+
+        function openSettings() {
+            initializeSettingsModal(); // Ensure latest state is loaded before opening
+            settingsModal.classList.remove('hidden');
+            // Animate panel
+            setTimeout(() => {
+                settingsPanel.classList.remove('scale-95', 'opacity-0');
+                settingsPanel.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        function closeSettings() {
+            settingsPanel.classList.remove('scale-100', 'opacity-100');
+            settingsPanel.classList.add('scale-95', 'opacity-0');
+            // Hide modal after animation
+            setTimeout(() => {
+                settingsModal.classList.add('hidden');
+            }, 300);
+        }
+
+        /**
+         * Saves settings to localStorage and applies them immediately to running state.
+         */
+        function saveSettingsAndApply() {
+            // Read values from modal
+            const newThreshold = parseFloat(document.getElementById('thresholdInput').value);
+            const newStepLength = parseFloat(document.getElementById('stepLengthInput').value);
+            const newAudio = document.getElementById('audioToggle').checked;
+            const newVibration = document.getElementById('vibrationToggle').checked;
+
+            // 1. Save to localStorage
+            localStorage.setItem('accelThreshold', newThreshold);
+            localStorage.setItem('stepLength', newStepLength);
+            localStorage.setItem('audioEnabled', newAudio.toString());
+            localStorage.setItem('vibrationEnabled', newVibration.toString());
+
+            // 2. Update running state variables immediately (no refresh needed)
+            ACCELERATION_THRESHOLD = newThreshold;
+            STEP_LENGTH_M = newStepLength;
+            isAudioEnabled = newAudio;
+            isVibrationEnabled = newVibration;
+
+            // 3. Close the modal
+            closeSettings();
+        }
+
+
+        // =========================================================
+        // == INITIALIZATION =======================================
+        // =========================================================
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // 1. Load settings and app state
+            loadSettings();
+            loadAppState();
+
+            // 2. Initial Clock setup
+            setInterval(updateDateTime, 1000);
+            updateDateTime();
+
+            // 3. Initial History Rendering
+            renderHistory();
+
+            // 4. Set initial status
+            updateStatusUI();
+
+            // 5. Setup event listener for closing modal by clicking outside
+            settingsModal.addEventListener('click', (e) => {
+                if (e.target.id === 'settingsModal') {
+                    closeSettings();
+                }
+            });
+        });
+    </script>
 </body>
 </html>
