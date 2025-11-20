@@ -5,21 +5,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Step Counter Pro - Pedometer</title>
-    <!-- Tailwind CSS CDN for styling -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="./output.css" rel="stylesheet">
     <style>
-        /* Custom Styles - Merged from custom.css */
+        
         body {
             background-color: #f3f4f6;
-            font-family: 'Inter', sans-serif;
-            /* Allow vertical scroll for history/chart */
-            overflow-y: auto; 
+            font-family: 'Inter', sans-serif;           
+            overflow-y: auto; /* Allow vertical */
         }
 
         /* Main Counter Display */
         .counter-display {
             display: flex;
-            flex-direction: column; /* To align step count and unit */
+            flex-direction: column; /* align step count and unit */
             align-items: center;
             justify-content: center;
             height: 280px;
@@ -27,7 +25,6 @@
             margin: 0 auto;
             border-radius: 9999px;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            /* PRO THEME: Darker, bolder indigo gradient */
             background-image: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
             color: white;
             transition: transform 0.3s ease-in-out;
@@ -107,79 +104,71 @@
 <body class="p-4 flex flex-col min-h-screen">
     <div class="max-w-md w-full mx-auto">
 
-        <!-- HEADER BLOCK: Includes Settings Button and Title -->
-        <div class="flex justify-between items-center mb-4 mt-2">
-            <!-- Settings Button (Left side) -->
+        <div class="flex justify-between items-center mb-2 mt-2">
             <button id="settingsButton" onclick="openSettings()"
                 class="text-gray-500 hover:text-indigo-600 focus:outline-none p-1 transition-colors duration-150">
-                <!-- Three Horizontal Dots Icon (More Options) -->
                 <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                     xmlns="http://www.w3.org/2000/svg">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z">
                     </path>
                 </svg>
             </button>
+
             <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">Step Counter PRO</h1>
-            <!-- Placeholder for alignment -->
             <div class="w-7 h-7"></div>
         </div>
 
-        <!-- Date & Time Display (MOVED TO TOP OF HISTORY) -->
-        <div id="dateTimeDisplay" class="text-center mt-4 mb-6 text-base font-semibold text-gray-600">
-            <!-- Date and Time will be updated here by JavaScript -->
-        </div>
+        <div id="dateTimeDisplay" class="text-center mt-2 mb-2 text-base font-semibold text-gray-600">
+            </div>
 
-        <!-- STATUS MESSAGE -->
-        <p id="statusMessage" class="text-center text-xs mb-6 text-gray-600 italic">
+        <p id="statusMessage" class="text-center text-xs mb-4 text-gray-600 italic">
             Accelerometer not running. Tap START to begin.
         </p>
 
-        <!-- MAIN COUNTER DISPLAY -->
         <div id="counterDisplay" class="counter-display shadow-2xl">
             <span id="stepCount" class="text-7xl font-extrabold leading-none">0</span>
             <span class="text-xl font-medium mt-1 opacity-80">STEPS</span>
         </div>
 
-        <!-- START/STOP BUTTONS -->
-        <div class="flex justify-center mt-8 space-x-4">
+        <div class="flex justify-center mt-8 space-x-2">
             <button id="startButton" onclick="startPedometer()"
-                class="px-8 py-3 bg-indigo-600 text-white font-bold text-lg rounded-full shadow-lg hover:bg-indigo-700 transition-all transform hover:scale-105 active:scale-95 disabled:bg-gray-400 disabled:opacity-70"
+                class="px-5 py-3 bg-indigo-600 text-white font-bold text-base rounded-full shadow-lg hover:bg-indigo-700 transition-all transform hover:scale-105 active:scale-95 disabled:bg-gray-400 disabled:opacity-70 flex-1"
                 aria-label="Start Step Tracking">
                 START
             </button>
             <button id="stopButton" onclick="stopPedometer()" disabled
-                class="px-8 py-3 bg-red-500 text-white font-bold text-lg rounded-full shadow-lg hover:bg-red-600 transition-all transform hover:scale-105 active:scale-95 disabled:bg-gray-400 disabled:opacity-70"
+                class="px-5 py-3 bg-red-500 text-white font-bold text-base rounded-full shadow-lg hover:bg-red-600 transition-all transform hover:scale-105 active:scale-95 disabled:bg-gray-400 disabled:opacity-70 flex-1"
                 aria-label="Stop Step Tracking">
                 STOP
             </button>
+            <button id="resetButton" onclick="resetSession()" 
+                class="px-5 py-3 bg-indigo-600 text-white font-bold text-base rounded-full shadow-lg hover:bg-indigo-700 transition-all transform hover:scale-105 active:scale-95 disabled:bg-gray-400 disabled:opacity-70 flex-1"
+                aria-label="Reset Today's Step Count and Session Time" 
+                disabled>
+                RESET
+            </button>
         </div>
 
-        <!-- Today's Stats (4 METRICS - 2x2 GRID) -->
         <div class="mt-8 grid grid-cols-2 gap-4 text-center">
-            <!-- Row 1, Col 1: Distance -->
             <div class="bg-white p-3 rounded-xl shadow">
                 <p id="distance" class="text-xl font-bold text-indigo-600">0.00</p>
                 <p class="text-xs text-gray-500">KM</p>
             </div>
-            <!-- Row 1, Col 2: Calories -->
             <div class="bg-white p-3 rounded-xl shadow">
                 <p id="calories" class="text-xl font-bold text-indigo-600">0</p>
                 <p class="text-xs text-gray-500">KCAL</p>
             </div>
-            <!-- Row 2, Col 1: Duration -->
             <div class="bg-white p-3 rounded-xl shadow">
-                <p id="duration" class="text-xl font-bold text-indigo-600">00:00</p>
+                <p id="duration" class="text-xl font-bold text-indigo-600">00:00:00</p>
                 <p class="text-xs text-gray-500">TIME</p>
             </div>
-            <!-- Row 2, Col 2: Pace (NEW) -->
             <div class="bg-white p-3 rounded-xl shadow">
                 <p id="pace" class="text-xl font-bold text-indigo-600">--:--</p>
-                <p class="text-xs text-gray-500">MIN/KM</p>
+                <p class="text-xs text-gray-500">MIN/M</p>
             </div>
         </div>
 
 
-        <!-- Step History & Chart -->
         <section class="mt-8 bg-white p-4 rounded-xl shadow mb-8">
             <h3 class="text-xl font-semibold text-gray-800 mb-4">Step History</h3>
             <button onclick="deleteHistory()"
@@ -187,26 +176,21 @@
                 Clear History
             </button>
             <div id="historyLog" class="mb-4">
-                <!-- History items will be inserted here by JavaScript -->
-            </div>
+                </div>
 
-            <!-- Simple Graphic History Container -->
             <h4 class="text-lg font-semibold text-gray-700 mt-6 mb-3 border-t pt-4">Daily Step Trend</h4>
             <div id="chartContainer"
                 class="h-40 w-full flex items-end justify-between p-2 bg-gray-50 rounded-xl border border-gray-200">
-                <!-- Chart bars will be inserted here by JavaScript -->
-            </div>
+                </div>
         </section>
 
     </div>
 
-    <!-- SETTINGS MODAL -->
     <div id="settingsModal"
         class="modal fixed inset-0 flex items-center justify-center p-4 transition-opacity duration-300 opacity-0 pointer-events-none">
         <div class="bg-white p-6 rounded-3xl shadow-2xl w-full max-w-sm transform scale-95 transition-transform duration-300">
             <h2 class="text-2xl font-bold text-gray-900 mb-6 border-b pb-2">App Settings</h2>
 
-            <!-- Threshold Slider -->
             <div class="mb-6">
                 <label for="thresholdRange" class="block text-sm font-medium text-gray-700 mb-2">
                     Sensitivity Threshold: <span id="thresholdValue" class="font-bold text-indigo-600">2.0</span>
@@ -219,7 +203,6 @@
                 </div>
             </div>
 
-            <!-- Step Length Input -->
             <div class="mb-6">
                 <label for="stepLengthInput" class="block text-sm font-medium text-gray-700 mb-2">
                     Avg. Step Length (meters):
@@ -228,7 +211,6 @@
                     class="w-full p-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-gray-900">
             </div>
 
-            <!-- Audio Toggle -->
             <div class="flex justify-between items-center mb-4 pb-2 border-b">
                 <span class="text-sm font-medium text-gray-700">Step Sound Feedback</span>
                 <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
@@ -239,7 +221,6 @@
                 </div>
             </div>
 
-            <!-- Vibration Toggle -->
             <div class="flex justify-between items-center mb-6">
                 <span class="text-sm font-medium text-gray-700">Vibration Feedback</span>
                 <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
@@ -250,7 +231,6 @@
                 </div>
             </div>
 
-            <!-- Save and Close Button -->
             <button onclick="saveSettings()"
                 class="w-full px-4 py-3 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition-colors active:scale-95">
                 Save Settings & Close
@@ -285,13 +265,14 @@
         let totalTimeMs = 0; // NEW: Track total elapsed time in milliseconds
         let intervalId = null; // For tracking duration
 
-        // Element References
+        // Element References (UPDATED to include resetButton)
         const dateTimeDisplay = document.getElementById('dateTimeDisplay');
         const statusMessage = document.getElementById('statusMessage');
         const counterDisplay = document.getElementById('counterDisplay');
         const stepCountElement = document.getElementById('stepCount');
         const startButton = document.getElementById('startButton');
         const stopButton = document.getElementById('stopButton');
+        const resetButton = document.getElementById('resetButton'); // <--- NEW ELEMENT REFERENCE
         const distanceElement = document.getElementById('distance');
         const caloriesElement = document.getElementById('calories');
         const durationElement = document.getElementById('duration');
@@ -418,10 +399,11 @@
         }
 
         /**
-         * Calculates distance in kilometers.
+         * Calculates distance in meters.
          */
         function calculateDistance(steps) {
-            return (steps * STEP_LENGTH_M) / 1000; // Kilometers
+            // Convert to kilometers for display
+            return (steps * STEP_LENGTH_M) / 1000; 
         }
 
         /**
@@ -522,6 +504,13 @@
             
             const currentDistanceKm = calculateDistance(steps);
 
+            // Enable/Disable Reset Button
+            if (steps > 0) {
+                resetButton.disabled = false;
+            } else {
+                resetButton.disabled = true;
+            }
+
             stepCountElement.textContent = steps.toLocaleString();
             distanceElement.textContent = currentDistanceKm.toFixed(2);
             caloriesElement.textContent = calculateCalories(steps).toLocaleString();
@@ -546,22 +535,24 @@
             // Since a full modal alert implementation is complex, we will temporarily use the status bar
             // to display the message clearly for a few seconds.
             const originalText = statusMessage.textContent;
+            const originalClasses = Array.from(statusMessage.classList).filter(c => c.startsWith('text-'));
+
             statusMessage.textContent = `${title}: ${message}`;
 
             let color = 'text-blue-600';
             if (type === 'error') color = 'text-red-600';
             if (type === 'warning') color = 'text-yellow-600';
 
-            statusMessage.classList.remove('text-gray-600', 'text-green-600');
+            statusMessage.classList.remove(...originalClasses);
             statusMessage.classList.add(color);
 
             setTimeout(() => {
-                // Restore status message if pedometer is stopped
+                // Restore status message
+                statusMessage.classList.remove(color);
                 if (!isRunning) {
                     updateStatusUI();
                 } else {
                     // If running, restore running status UI
-                    statusMessage.classList.remove(color);
                     statusMessage.classList.add('text-green-600');
                     statusMessage.textContent = originalText;
                 }
@@ -605,13 +596,15 @@
                 return item;
             });
 
-            // If today's entry wasn't found, add it
+            // If today's entry wasn't found, and steps > 0, add it
             if (!found && steps > 0) {
                 newHistory.push({
                     date: todayKey,
                     steps: steps
                 });
             }
+            
+            // If today's entry was found but steps is now 0, ensure it's updated or removed if preferred (we keep it updated)
 
             localStorage.setItem('stepHistory', JSON.stringify(newHistory));
             renderHistory();
@@ -645,6 +638,30 @@
             startTime = null;
             totalTimeMs = 0; // Reset total session time
             updateStatsUI();
+        }
+
+        /**
+         * NEW: Resets the current session's steps and duration, and updates history.
+         */
+        function resetSession() {
+            /*if (!confirm("Are you sure you want to reset today's steps and duration?")) {
+                return;
+            }*/
+            
+            // Stop the pedometer if it's running
+            if (isRunning) {
+                stopPedometer(); 
+            }
+
+            // Reset session variables
+            steps = 0;
+            startTime = null;
+            totalTimeMs = 0; 
+
+            // Persist the reset (save 0 steps for today) and update UI
+            saveSteps(); // This updates history with 0 steps for today and calls renderHistory()
+            updateStatsUI();
+            updateDuration(); // Reset duration display to 00:00:00
         }
 
 
