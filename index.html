@@ -240,7 +240,7 @@
     </div>
 
     <audio id="stepSound" src="https://storage.googleapis.com/codeskulptor-assets/week7-bounce.mp3"
-        preload="auto"></audio>
+    preload="auto"></audio>
 
     <script>
         // =========================================================
@@ -288,7 +288,14 @@
         let accelerometer = null;
 
         function handleAccelerometer(event) {
-            const acceleration = event.accelerationIncludingGravity;
+            // FIX 1: Use 'event.acceleration' to exclude gravity, preventing false positives.
+            const acceleration = event.acceleration;
+
+            // Robustness check: Ensure acceleration data is available.
+            if (!acceleration || !acceleration.x) {
+                return;
+            }
+
             // Calculate the magnitude of the 3D acceleration vector
             const magnitude = Math.sqrt(
                 acceleration.x * acceleration.x +
@@ -364,10 +371,13 @@
             window.removeEventListener('devicemotion', handleAccelerometer, true);
             isRunning = false;
 
-            // Update total time before stopping interval
-            updateTotalTime(); 
-
-            // Stop the duration timer
+            // FIX: Correctly accumulate time ONLY when stopping/pausing
+            if (startTime) {
+                totalTimeMs += (Date.now() - startTime);
+                startTime = null; // Mark session as paused
+            }
+            
+            // 2. Stop the duration timer
             if (intervalId) {
                 clearInterval(intervalId);
                 intervalId = null;
@@ -383,20 +393,6 @@
         // =========================================================
         // == METRIC CALCULATION UTILITIES =========================
         // =========================================================
-        
-        /**
-         * Calculates the total elapsed time in milliseconds.
-         */
-        function updateTotalTime() {
-             // Calculate time since start (or resume) time if running
-             if (isRunning && startTime) {
-                // Update totalTimeMs by adding the difference between now and the last startTime
-                totalTimeMs += (Date.now() - startTime);
-                // Reset startTime to now to calculate the next delta
-                startTime = Date.now(); 
-            }
-            return totalTimeMs;
-        }
 
         /**
          * Calculates distance in meters.
@@ -455,9 +451,13 @@
             const timeStr = now.toLocaleTimeString(undefined, {
                 hour: '2-digit',
                 minute: '2-digit',
-                second: '2-digit'
             });
-            dateTimeDisplay.innerHTML = `${dateStr}<span class="text-indigo-600 ml-2">${timeStr}</span>`;
+            dateTimeDisplay.innerHTML = `
+                <div class="inline-flex items-center justify-center space-x-8">
+                    <span>${dateStr}</span>
+                    <span class="text-indigo-600">${timeStr}</span>
+                </div>
+            `;
         }
 
         function updateStatusUI() {
@@ -493,7 +493,7 @@
         function updateStatsUI(forceDurationUpdate = true) {
             // Recalculate duration here if not running and we need stats update
             if (forceDurationUpdate && !isRunning) {
-                updateTotalTime(); 
+                // updateTotalTime(); // THIS LINE WAS REMOVED AS REQUESTED
                 updateDuration();
             } else if (isRunning) {
                  // If running, the interval handles duration, but we update the pace calculation here
@@ -503,13 +503,15 @@
             }
             
             const currentDistanceKm = calculateDistance(steps);
-
-            // Enable/Disable Reset Button
-            if (steps > 0) {
+            
+            // --- NEW LOGIC: Enable/Disable Reset Button ---
+            const resetButton = document.getElementById('resetButton');
+            if (steps > 0 || totalTimeMs > 0) {
                 resetButton.disabled = false;
             } else {
                 resetButton.disabled = true;
             }
+            // ---------------------------------------------
 
             stepCountElement.textContent = steps.toLocaleString();
             distanceElement.textContent = currentDistanceKm.toFixed(2);
