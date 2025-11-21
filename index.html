@@ -644,12 +644,6 @@
                 steps = 0;
             }
 
-            if (localStorage.getItem('pedometerHistory')) {
-                historyData = JSON.parse(localStorage.getItem('pedometerHistory'));
-            } else {
-                historyData = {}; // Initialize as empty object if not found
-            }
-
             // Duration is not fully persisted in this simple version, reset session duration but keep total steps.
             startTime = null;
             totalTimeMs = 0; // Reset total session time
