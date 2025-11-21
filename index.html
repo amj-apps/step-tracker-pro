@@ -164,7 +164,7 @@
             </div>
             <div class="bg-white p-3 rounded-xl shadow">
                 <p id="pace" class="text-xl font-bold text-indigo-600">--:--</p>
-                <p class="text-xs text-gray-500">MIN/M</p>
+                <p class="text-xs text-gray-500">MIN/KM</p>
             </div>
         </div>
 
@@ -240,7 +240,6 @@
     </div>
 
     <audio id="stepSound" src="./ring.wav" preload="auto"></audio>
-    preload="auto"></audio>
 
     <script>
         // =========================================================
@@ -416,25 +415,32 @@
          * Calculates average pace in MIN/KM.
          * Returns formatted string or '--:--' if no distance/time.
          */
-        function calculatePaceKm(distanceKm, durationMs) {
-            if (distanceKm === 0 || durationMs < 5000) { // Only show pace after 5 seconds of activity
-                return '--:--';
+        /**
+         * Calculates pace in minutes per kilometer (min/km).
+         * @param {number} distanceKm - Total distance in kilometers.
+         * @param {number} totalTimeMs - Total time in milliseconds.
+         * @returns {string} Formatted pace string (MM:SS / km).
+         */
+        function calculatePaceKm(distanceKm, totalTimeMs) {
+            if (distanceKm <= 0 || totalTimeMs <= 0) {
+                return '00:00 / km';
             }
 
-            // Convert durationMs to minutes
-            const durationMinutes = durationMs / 1000 / 60;
-            
-            // Pace = Minutes / Kilometers
-            const paceDecimal = durationMinutes / distanceKm;
-            
-            // Convert decimal pace (e.g., 8.5 min) into MM:SS format
-            const minutes = Math.floor(paceDecimal);
-            const secondsDecimal = paceDecimal - minutes;
-            const seconds = Math.round(secondsDecimal * 60);
+            // 1. Convert total time from milliseconds to minutes
+            const totalTimeMinutes = totalTimeMs / (1000 * 60);
 
-            const pad = (num) => String(num).padStart(2, '0');
+            // 2. Calculate Pace: total_time_minutes / total_distance_km
+            const paceMinutesPerKm = totalTimeMinutes / distanceKm;
 
-            return `${pad(minutes)}:${pad(seconds)}`;
+            // 3. Separate minutes (integer part) and seconds (fractional part)
+            const paceMinutes = Math.floor(paceMinutesPerKm);
+            const paceSeconds = Math.round((paceMinutesPerKm - paceMinutes) * 60);
+
+            // 4. Format the output string
+            const minutesStr = String(paceMinutes).padStart(2, '0');
+            const secondsStr = String(paceSeconds).padStart(2, '0');
+
+            return `${minutesStr}:${secondsStr} / km`;
         }
 
 
@@ -638,6 +644,12 @@
                 steps = 0;
             }
 
+            if (localStorage.getItem('pedometerHistory')) {
+                historyData = JSON.parse(localStorage.getItem('pedometerHistory'));
+            } else {
+                historyData = {}; // Initialize as empty object if not found
+            }
+
             // Duration is not fully persisted in this simple version, reset session duration but keep total steps.
             startTime = null;
             totalTimeMs = 0; // Reset total session time
@@ -668,46 +680,13 @@
             updateDuration(); // Reset duration display to 00:00:00
         }
 
-
         // =========================================================
         // == HISTORY & CHART RENDERING ============================
         // =========================================================
-
-        /**
-         * Renders the list of step history items and calls the chart renderer.
-         */
-        function renderHistory() {
-            const history = loadHistory();
-            historyLog.innerHTML = '';
-
-            if (history.length === 0) {
-                historyLog.innerHTML = '<p class="text-gray-500 text-sm italic">No history yet. Start tracking steps!</p>';
-            } else {
-                // Render history items in reverse order (newest first)
-                history.slice().reverse().forEach(item => {
-                    const dateObj = new Date(item.date);
-                    const displayDate = dateObj.toLocaleDateString(undefined, {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric'
-                    });
-
-                    const div = document.createElement('div');
-                    div.className = 'flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0';
-                    div.innerHTML = `
-                        <span class="font-medium text-gray-700">${displayDate}</span>
-                        <span class="font-bold text-indigo-700">${item.steps.toLocaleString()} steps</span>
-                    `;
-                    historyLog.appendChild(div);
-                });
-            }
-
-            // Call the new chart rendering function
-            renderChart(); 
-        }
-
+        
         /**
          * Renders a simple bar chart visualization of the last 7 days.
+         * MUST be defined before renderHistory() to avoid ReferenceError.
          */
         function renderChart() {
             const history = loadHistory();
@@ -780,6 +759,41 @@
             });
         }
 
+
+        /**
+         * Renders the list of step history items and calls the chart renderer.
+         */
+        function renderHistory() {
+            const history = loadHistory();
+            
+            // Clear the correct element (historyLog).
+            historyLog.innerHTML = '';
+            
+            if (history.length === 0) {
+                historyLog.innerHTML = '<p class="text-gray-500 text-sm italic">No history yet. Start tracking steps!</p>';
+            } else {
+                // Render history items in reverse order (newest first)
+                history.slice().reverse().forEach(item => {
+                    const dateObj = new Date(item.date);
+                    const displayDate = dateObj.toLocaleDateString(undefined, {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric'
+                    });
+
+                    const div = document.createElement('div');
+                    div.className = 'flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0';
+                    div.innerHTML = `
+                        <span class="font-medium text-gray-700">${displayDate}</span>
+                        <span class="font-bold text-indigo-700">${item.steps.toLocaleString()} steps</span>
+                    `;
+                    historyLog.appendChild(div);
+                });
+            }
+
+            // Call the chart rendering function (now defined above)
+            renderChart(); 
+        }
 
         // =========================================================
         // == SETTINGS & MODAL LOGIC ===============================
@@ -885,13 +899,14 @@
             // 1. Load settings and app state
             loadSettings();
             loadAppState();
+            renderHistory();
 
             // 2. Initial Clock setup
             setInterval(updateDateTime, 1000);
             updateDateTime();
 
             // 3. Initial History & Chart Rendering
-            renderHistory();
+            // renderHistory();
 
             // 4. Set initial status
             updateStatusUI();
