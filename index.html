@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Step Counter Pro - Pedometer</title>
     <link href="./output.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    
     <style>
         
         body {
@@ -179,9 +181,9 @@
                 </div>
 
             <h4 class="text-lg font-semibold text-gray-700 mt-6 mb-3 border-t pt-4">Daily Step Trend</h4>
-            <div id="chartContainer"
-                class="h-40 w-full flex items-end justify-between p-2 bg-gray-50 rounded-xl border border-gray-200">
-                </div>
+            <div id="chartContainer" class="h-40 w-full p-2 bg-gray-50 rounded-xl border border-gray-200">
+                <canvas id="dailyStepsChart"></canvas>
+            </div>
         </section>
 
     </div>
@@ -678,78 +680,83 @@
         // == HISTORY & CHART RENDERING ============================
         // =========================================================
         
+        let dailyStepsChart = null; // Variable to hold the chart instance
+
         /**
-         * Renders a simple bar chart visualization of the last 7 days.
-         * MUST be defined before renderHistory() to avoid ReferenceError.
+         * Renders the history visualization using Chart.js.
          */
         function renderChart() {
             const history = loadHistory();
-            const chartContainer = document.getElementById('chartContainer');
-            chartContainer.innerHTML = '';
-
+            const canvasElement = document.getElementById('dailyStepsChart');
+            
+            // If no history, show a message and stop
             if (history.length === 0) {
+                const chartContainer = document.getElementById('chartContainer');
                 chartContainer.innerHTML = '<p class="text-gray-500 text-sm italic text-center w-full mt-4">Track steps to see your trend here.</p>';
                 return;
             }
 
+            // Remove previous message if present
+            document.getElementById('chartContainer').innerHTML = '';
+            document.getElementById('chartContainer').appendChild(canvasElement);
+
             // Sort by date (oldest first for chart trend)
             const sortedHistory = history.slice().sort((a, b) => new Date(a.date) - new Date(b.date));
-            const maxSteps = Math.max(...sortedHistory.map(item => item.steps), 1000); // Ensure a min max of 1000
+            const recentHistory = sortedHistory.slice(-7); // Show only the last 7 days
 
-            // Show only the last 7 days for a simple, readable trend chart
-            const recentHistory = sortedHistory.slice(-7);
-
-            // Add filler for less than 7 days to maintain layout consistency
-            const totalDaysToShow = 7;
-            const fillerCount = totalDaysToShow - recentHistory.length;
+            const labels = recentHistory.map(item => {
+                const dateObj = new Date(item.date);
+                return dateObj.toLocaleDateString(undefined, { weekday: 'short' });
+            });
             
-            // Add filler bars (empty days)
-            for (let i = 0; i < fillerCount; i++) {
-                const fillerWrapper = document.createElement('div');
-                fillerWrapper.className = 'flex flex-col items-center justify-end h-full w-[12%] mx-0.5 opacity-30';
-                fillerWrapper.innerHTML = `
-                    <div class="w-6 h-1 bg-gray-200 rounded-t-lg"></div>
-                    <span class="text-xs text-gray-400 mt-1">--</span>
-                `;
-                chartContainer.appendChild(fillerWrapper);
+            const data = recentHistory.map(item => item.steps);
+
+            // Destroy existing chart instance before creating a new one
+            if (dailyStepsChart) {
+                dailyStepsChart.destroy();
             }
 
-
-            recentHistory.forEach(item => {
-                // Calculate height relative to max steps
-                const heightPercentage = Math.max(Math.round((item.steps / maxSteps) * 100), 5); // Ensure min height of 5%
-                const dateObj = new Date(item.date);
-                const dayOfWeek = dateObj.toLocaleDateString(undefined, { weekday: 'short' });
-                const isToday = item.date === getTodayKey();
-
-                const barWrapper = document.createElement('div');
-                // Use w-[12%] to ensure 7 bars fit nicely (7 * 12% = 84%, leaving space for margins/gaps)
-                barWrapper.className = 'flex flex-col items-center justify-end h-full w-[12%] mx-0.5 group relative';
-
-                // Tooltip for detailed steps
-                const tooltipHtml = `
-                    <div class="absolute bottom-full mb-2 hidden group-hover:block px-2 py-1 bg-gray-800 text-white text-xs rounded-lg shadow-xl whitespace-nowrap">
-                        ${item.steps.toLocaleString()} steps
-                        ${isToday ? ' (Today)' : ''}
-                    </div>
-                `;
-
-                // Bar element - Highlight today's bar
-                const barColor = isToday ? 'bg-indigo-700' : 'bg-indigo-500';
-                const bar = document.createElement('div');
-                bar.style.height = `${heightPercentage}%`;
-                bar.className = `w-6 ${barColor} hover:bg-indigo-600 transition-colors duration-200 rounded-t-lg shadow-md cursor-pointer transform hover:scale-y-110`;
-
-                // Day label
-                const label = document.createElement('span');
-                label.className = `text-xs mt-1 ${isToday ? 'font-bold text-indigo-700' : 'text-gray-500'}`;
-                label.textContent = dayOfWeek;
-
-                barWrapper.innerHTML = tooltipHtml; // Add tooltip first
-                barWrapper.appendChild(bar);
-                barWrapper.appendChild(label);
-
-                chartContainer.appendChild(barWrapper);
+            dailyStepsChart = new Chart(canvasElement, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Steps',
+                        data: data,
+                        backgroundColor: '#4f46e5', // Indigo-600 color
+                        borderColor: '#4f46e5',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            enabled: true
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                display: false // Hide Y-axis numbers for a cleaner look
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
             });
         }
 
