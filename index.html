@@ -182,7 +182,7 @@
 
             <h4 class="text-lg font-semibold text-gray-700 mt-6 mb-3 border-t pt-4">Daily Step Trend</h4>
             <div id="chartContainer" class="h-40 w-full p-2 bg-gray-50 rounded-xl border border-gray-200">
-                <canvas id="dailyStepsChart"></canvas>
+                <canvas id="dailyStepsChart" class="h-full w-full"></canvas>
             </div>
         </section>
 
@@ -358,8 +358,7 @@
                 }
 
                 updateStatusUI();
-                startButton.disabled = true;
-                stopButton.disabled = false;
+                
                 counterDisplay.classList.add('running');
             } else {
                 alertMessage('Sensor Missing', 'Your device does not support the Device Motion API needed for step tracking.', 'warning');
@@ -388,8 +387,7 @@
 
             saveSteps(); // Save today's steps
             updateStatusUI();
-            startButton.disabled = false;
-            stopButton.disabled = true;
+            
             counterDisplay.classList.remove('running');
         }
         
@@ -471,14 +469,23 @@
         }
 
         function updateStatusUI() {
+            // FIX: Centralized control for the START/STOP buttons based on isRunning state.
             if (isRunning) {
                 statusMessage.textContent = `Running. Threshold: ${ACCELERATION_THRESHOLD.toFixed(1)}.`;
                 statusMessage.classList.remove('text-gray-600', 'text-red-600');
                 statusMessage.classList.add('text-green-600');
+                
+                // Button States: RUNNING
+                startButton.disabled = true;
+                stopButton.disabled = false;
             } else {
                 statusMessage.textContent = `Stopped. Tap START to begin.`;
                 statusMessage.classList.remove('text-green-600');
                 statusMessage.classList.add('text-gray-600');
+
+                // Button States: STOPPED
+                startButton.disabled = false; // <<< This is the critical line that re-enables START
+                stopButton.disabled = true;
             }
         }
 
@@ -691,9 +698,16 @@
             
             // If no history, show a message and stop
             if (history.length === 0) {
-                const chartContainer = document.getElementById('chartContainer');
                 chartContainer.innerHTML = '<p class="text-gray-500 text-sm italic text-center w-full mt-4">Track steps to see your trend here.</p>';
+                canvasElement.style.display = 'none'; // Hide the canvas
                 return;
+            }
+            // If history exists, ensure canvas is visible and ready
+            if (canvasElement.style.display === 'none') {
+                 // Restore the canvas if it was hidden
+                 chartContainer.innerHTML = ''; // Clear the message
+                 chartContainer.appendChild(canvasElement); // Re-add the canvas element (safe because we didn't use innerHTML on it)
+                 canvasElement.style.display = 'block';
             }
 
             // Remove previous message if present
