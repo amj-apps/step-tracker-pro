@@ -137,7 +137,7 @@
                 START
             </button>
             <button id="stopButton" onclick="stopPedometer()" disabled
-                class="px-5 py-3 bg-red-500 text-white font-bold text-base rounded-full shadow-lg hover:bg-red-600 transition-all transform hover:scale-105 active:scale-95 disabled:bg-gray-400 disabled:opacity-70 flex-1"
+                class="px-5 py-3 bg-red-500 text-white font-bold text-base rounded-full shadow-lg hover:bg-red-700 transition-all transform hover:scale-105 active:scale-95 disabled:bg-gray-400 disabled:opacity-70 flex-1"
                 aria-label="Stop Step Tracking">
                 STOP
             </button>
@@ -195,7 +195,7 @@
                 <label for="thresholdRange" class="block text-sm font-medium text-gray-700 mb-2">
                     Sensitivity Threshold: <span id="thresholdValue" class="font-bold text-indigo-600">2.0</span>
                 </label>
-                <input type="range" id="thresholdRange" min="0.5" max="10.0" step="0.1" value="2.0"
+                <input type="range" id="thresholdRange" min="1.0" max="10.0" step="0.5" value="5.0"
                     class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
                 <div class="flex justify-between text-xs text-gray-500 mt-1">
                     <span>Low (0.5)</span>
@@ -215,7 +215,7 @@
                 <span class="text-sm font-medium text-gray-700">Step Sound Feedback</span>
                 <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
                     <input type="checkbox" name="audioToggle" id="audioToggle"
-                        class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer" />
+                        class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-gray-300 appearance-none cursor-pointer" />
                     <label for="audioToggle"
                         class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
                 </div>
@@ -225,7 +225,7 @@
                 <span class="text-sm font-medium text-gray-700">Vibration Feedback</span>
                 <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
                     <input type="checkbox" name="vibrationToggle" id="vibrationToggle"
-                        class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer" />
+                        class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-gray-300 appearance-none cursor-pointer" />
                     <label for="vibrationToggle"
                         class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
                 </div>
@@ -239,7 +239,7 @@
         </div>
     </div>
 
-    <audio id="stepSound" src="https://storage.googleapis.com/codeskulptor-assets/week7-bounce.mp3"
+    <audio id="stepSound" src="./ring.wav" preload="auto"></audio>
     preload="auto"></audio>
 
     <script>
@@ -383,7 +383,7 @@
                 intervalId = null;
             }
 
-            updateStatsUI(true); // update graph
+            updateStatsUI(true); // update chart
 
             saveSteps(); // Save today's steps
             updateStatusUI();
