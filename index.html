@@ -195,7 +195,7 @@
                 <label for="thresholdRange" class="block text-sm font-medium text-gray-700 mb-2">
                     Sensitivity Threshold: <span id="thresholdValue" class="font-bold text-indigo-600">2.0</span>
                 </label>
-                <input type="range" id="thresholdRange" min="0.5" max="5.0" step="0.1" value="2.0"
+                <input type="range" id="thresholdRange" min="0.5" max="10.0" step="0.1" value="2.0"
                     class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
                 <div class="flex justify-between text-xs text-gray-500 mt-1">
                     <span>Low (0.5)</span>
@@ -272,7 +272,7 @@
         const stepCountElement = document.getElementById('stepCount');
         const startButton = document.getElementById('startButton');
         const stopButton = document.getElementById('stopButton');
-        const resetButton = document.getElementById('resetButton'); // <--- NEW ELEMENT REFERENCE
+        const resetButton = document.getElementById('resetButton');
         const distanceElement = document.getElementById('distance');
         const caloriesElement = document.getElementById('calories');
         const durationElement = document.getElementById('duration');
@@ -383,6 +383,8 @@
                 intervalId = null;
             }
 
+            updateStatsUI(true); // update graph
+
             saveSteps(); // Save today's steps
             updateStatusUI();
             startButton.disabled = false;
@@ -483,7 +485,7 @@
 
             const pad = (num) => String(num).padStart(2, '0');
             
-            // Display: HH:MM:SS
+            // Display: HH:MM
             durationElement.textContent = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
             
             // Update all stats whenever duration updates (to keep Pace current)
