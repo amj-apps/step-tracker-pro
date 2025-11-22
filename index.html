@@ -170,41 +170,36 @@
             </div>
         </div>
 
-
         <section class="mt-8 bg-white p-4 rounded-xl shadow mb-8">
             <h3 class="text-xl font-semibold text-gray-800 mb-4">Step History</h3>
             <button onclick="deleteHistory()"
                 class="text-xs float-right -mt-8 text-red-500 hover:text-red-700 transition-colors">
                 Clear History
             </button>
-            <div id="historyLog" class="mb-4">
-                </div>
-
+                <div id="historyLog" class="mb-4">
+            </div>
             <h4 class="text-lg font-semibold text-gray-700 mt-6 mb-3 border-t pt-4">Daily Step Trend</h4>
             <div id="chartContainer" class="h-40 w-full p-2 bg-gray-50 rounded-xl border border-gray-200">
                 <canvas id="dailyStepsChart" class="h-full w-full"></canvas>
             </div>
         </section>
-
     </div>
 
     <div id="settingsModal"
         class="modal fixed inset-0 flex items-center justify-center p-4 transition-opacity duration-300 opacity-0 pointer-events-none">
         <div class="bg-white p-6 rounded-3xl shadow-2xl w-full max-w-sm transform scale-95 transition-transform duration-300">
-            <h2 class="text-2xl font-bold text-gray-900 mb-6 border-b pb-2">App Settings</h2>
-
+            <h2 class="text-2xl font-bold text-gray-900 mb-6 border-b pb-2">Settings</h2>
             <div class="mb-6">
                 <label for="thresholdRange" class="block text-sm font-medium text-gray-700 mb-2">
-                    Sensitivity Threshold: <span id="thresholdValue" class="font-bold text-indigo-600">2.0</span>
+                    Sensitivity Threshold: <span id="thresholdValue" class="font-bold text-indigo-600">5.0</span>
                 </label>
-                <input type="range" id="thresholdRange" min="1.0" max="10.0" step="0.5" value="5.0"
+                <input type="range" id="thresholdRange" min="0.5" max="10.0" step="0.1" value="5.0"
                     class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
                 <div class="flex justify-between text-xs text-gray-500 mt-1">
                     <span>Low (0.5)</span>
-                    <span>High (5.0)</span>
+                    <span>High (10.0)</span>
                 </div>
             </div>
-
             <div class="mb-6">
                 <label for="stepLengthInput" class="block text-sm font-medium text-gray-700 mb-2">
                     Avg. Step Length (meters):
@@ -212,7 +207,6 @@
                 <input type="number" id="stepLengthInput" min="0.1" max="1.5" step="0.01" value="0.76"
                     class="w-full p-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-gray-900">
             </div>
-
             <div class="flex justify-between items-center mb-4 pb-2 border-b">
                 <span class="text-sm font-medium text-gray-700">Step Sound Feedback</span>
                 <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
@@ -222,7 +216,6 @@
                         class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
                 </div>
             </div>
-
             <div class="flex justify-between items-center mb-6">
                 <span class="text-sm font-medium text-gray-700">Vibration Feedback</span>
                 <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
@@ -232,27 +225,24 @@
                         class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
                 </div>
             </div>
-
             <button onclick="saveSettings()"
                 class="w-full px-4 py-3 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition-colors active:scale-95">
                 Save Settings & Close
             </button>
-
         </div>
     </div>
 
     <audio id="stepSound" src="./ring.wav" preload="auto"></audio>
 
-    <script>
-        // =========================================================
-        // == CONFIGURABLE CONSTANTS & STATE =======================
-        // =========================================================
 
-        const DEFAULT_THRESHOLD = 2.0;
+    <script>
+        // CONFIGURABLE CONSTANTS & STATE 
+    
+        const DEFAULT_THRESHOLD = 5.0;
         const DEFAULT_STEP_LENGTH = 0.76;
         const DEFAULT_AUDIO_ON = true;
         const DEFAULT_VIBRATE_ON = true;
-        const STEP_DEBOUNCE_TIME = 200; // milliseconds
+        const STEP_DEBOUNCE_TIME = 200; 
 
         // State & Settings variables (will be loaded/updated)
         let ACCELERATION_THRESHOLD = DEFAULT_THRESHOLD;
@@ -263,10 +253,10 @@
         let steps = 0;
         let lastStepTime = 0;
         let startTime = null;
-        let totalTimeMs = 0; // NEW: Track total elapsed time in milliseconds
+        let totalTimeMs = 0; // Track total elapsed time in milliseconds
         let intervalId = null; // For tracking duration
 
-        // Element References (UPDATED to include resetButton)
+        // Element References
         const dateTimeDisplay = document.getElementById('dateTimeDisplay');
         const statusMessage = document.getElementById('statusMessage');
         const counterDisplay = document.getElementById('counterDisplay');
@@ -282,32 +272,26 @@
         const settingsModal = document.getElementById('settingsModal');
         const stepSound = document.getElementById('stepSound');
 
-        // =========================================================
-        // == ACCELEROMETER/STEP DETECTION LOGIC ===================
-        // =========================================================
+        
+        // ACCELEROMETER/STEP DETECTION LOGIC 
 
         let accelerometer = null;
 
         function handleAccelerometer(event) {
-            // FIX 1: Use 'event.acceleration' to exclude gravity, preventing false positives.
             const acceleration = event.acceleration;
-
             // Robustness check: Ensure acceleration data is available.
             if (!acceleration || !acceleration.x) {
                 return;
             }
-
             // Calculate the magnitude of the 3D acceleration vector
             const magnitude = Math.sqrt(
                 acceleration.x * acceleration.x +
                 acceleration.y * acceleration.y +
                 acceleration.z * acceleration.z
             );
-
             // Simple peak detection: check if the magnitude exceeds the threshold
             if (magnitude > ACCELERATION_THRESHOLD) {
                 const currentTime = Date.now();
-
                 // Debounce check: ensure a minimum time has passed since the last step
                 if (currentTime - lastStepTime > STEP_DEBOUNCE_TIME) {
                     steps++;
@@ -320,7 +304,6 @@
 
         function startPedometer() {
             if (isRunning) return;
-
             // Request permission for DeviceMotion events (necessary for iOS 13+)
             if (typeof DeviceOrientationEvent.requestPermission === 'function') {
                 DeviceOrientationEvent.requestPermission()
@@ -345,20 +328,17 @@
             // Check for DeviceMotionEvent support
             if (window.DeviceMotionEvent) {
                 accelerometer = window.addEventListener('devicemotion', handleAccelerometer, true);
-                isRunning = true;
-                
+                isRunning = true;         
                 // If starting fresh, set startTime. Otherwise, duration continues to tick.
                 if (!startTime) {
                     startTime = Date.now();
                 }
-
                 // Start the duration timer interval
                 if (!intervalId) {
                     intervalId = setInterval(updateDuration, 1000);
                 }
 
-                updateStatusUI();
-                
+                updateStatusUI();             
                 counterDisplay.classList.add('running');
             } else {
                 alertMessage('Sensor Missing', 'Your device does not support the Device Motion API needed for step tracking.', 'warning');
@@ -370,14 +350,12 @@
 
             window.removeEventListener('devicemotion', handleAccelerometer, true);
             isRunning = false;
-
-            // FIX: Correctly accumulate time ONLY when stopping/pausing
+            // correctly accumulate time ONLY when stopping/pausing
             if (startTime) {
                 totalTimeMs += (Date.now() - startTime);
                 startTime = null; // Mark session as paused
-            }
-            
-            // 2. Stop the duration timer
+            }          
+            // Stop the duration timer
             if (intervalId) {
                 clearInterval(intervalId);
                 intervalId = null;
@@ -391,30 +369,23 @@
             counterDisplay.classList.remove('running');
         }
         
-        // =========================================================
-        // == METRIC CALCULATION UTILITIES =========================
-        // =========================================================
-
-        /**
-         * Calculates distance in meters.
-         */
+        // METRIC CALCULATION UTILITIES 
+      
+        // Calculates distance in meters.
         function calculateDistance(steps) {
             // Convert to kilometers for display
             return (steps * STEP_LENGTH_M) / 1000; 
         }
 
-        /**
-         * Calculates calories burned (KCAL).
-         */
+        // Calculates calories burned (KCAL).
         function calculateCalories(steps) {
             // Rough estimation: 0.04 Calories per step
             return Math.round(steps * 0.04);
         }
 
-        /**
-         * Calculates average pace in MIN/KM.
-         * Returns formatted string or '--:--' if no distance/time.
-         */
+        // Calculates average pace in MIN/KM.
+        // Returns formatted string or '--:--' if no distance/time.
+
         /**
          * Calculates pace in minutes per kilometer (min/km).
          * @param {number} distanceKm - Total distance in kilometers.
@@ -426,17 +397,17 @@
                 return '00:00 / km';
             }
 
-            // 1. Convert total time from milliseconds to minutes
+            // Convert total time from milliseconds to minutes
             const totalTimeMinutes = totalTimeMs / (1000 * 60);
 
-            // 2. Calculate Pace: total_time_minutes / total_distance_km
+            // Calculate Pace: total_time_minutes / total_distance_km
             const paceMinutesPerKm = totalTimeMinutes / distanceKm;
 
-            // 3. Separate minutes (integer part) and seconds (fractional part)
+            // Separate minutes (integer part) and seconds (fractional part)
             const paceMinutes = Math.floor(paceMinutesPerKm);
             const paceSeconds = Math.round((paceMinutesPerKm - paceMinutes) * 60);
 
-            // 4. Format the output string
+            // Format the output string
             const minutesStr = String(paceMinutes).padStart(2, '0');
             const secondsStr = String(paceSeconds).padStart(2, '0');
 
@@ -444,9 +415,7 @@
         }
 
 
-        // =========================================================
-        // == UI RENDERING =========================================
-        // =========================================================
+        // UI RENDERING 
 
         function updateDateTime() {
             const now = new Date();
@@ -469,7 +438,7 @@
         }
 
         function updateStatusUI() {
-            // FIX: Centralized control for the START/STOP buttons based on isRunning state.
+            // Centralized control for the START/STOP buttons based on isRunning state.
             if (isRunning) {
                 statusMessage.textContent = `Running. Threshold: ${ACCELERATION_THRESHOLD.toFixed(1)}.`;
                 statusMessage.classList.remove('text-gray-600', 'text-red-600');
@@ -484,7 +453,7 @@
                 statusMessage.classList.add('text-gray-600');
 
                 // Button States: STOPPED
-                startButton.disabled = false; // <<< This is the critical line that re-enables START
+                startButton.disabled = false; 
                 stopButton.disabled = true;
             }
         }
@@ -493,11 +462,9 @@
             // Total time calculation moved into updateTotalTime
             const totalMs = totalTimeMs + (isRunning && startTime ? Date.now() - startTime : 0);
             const totalSeconds = Math.floor(totalMs / 1000);
-
             const hours = Math.floor(totalSeconds / 3600);
             const minutes = Math.floor((totalSeconds % 3600) / 60);
             const seconds = totalSeconds % 60;
-
             const pad = (num) => String(num).padStart(2, '0');
             
             // Display: HH:MM
@@ -510,7 +477,6 @@
         function updateStatsUI(forceDurationUpdate = true) {
             // Recalculate duration here if not running and we need stats update
             if (forceDurationUpdate && !isRunning) {
-                // updateTotalTime(); // THIS LINE WAS REMOVED AS REQUESTED
                 updateDuration();
             } else if (isRunning) {
                  // If running, the interval handles duration, but we update the pace calculation here
@@ -521,7 +487,7 @@
             
             const currentDistanceKm = calculateDistance(steps);
             
-            // --- NEW LOGIC: Enable/Disable Reset Button ---
+            // --- LOGIC: Enable/Disable Reset Button ---
             const resetButton = document.getElementById('resetButton');
             if (steps > 0 || totalTimeMs > 0) {
                 resetButton.disabled = false;
@@ -532,8 +498,7 @@
 
             stepCountElement.textContent = steps.toLocaleString();
             distanceElement.textContent = currentDistanceKm.toFixed(2);
-            caloriesElement.textContent = calculateCalories(steps).toLocaleString();
-            
+            caloriesElement.textContent = calculateCalories(steps).toLocaleString();           
             if (!isRunning) {
                  paceElement.textContent = calculatePaceKm(currentDistanceKm, totalTimeMs);
             }
@@ -551,17 +516,13 @@
 
         // Custom alert/message box instead of window.alert
         function alertMessage(title, message, type = 'info') {
-            // Since a full modal alert implementation is complex, we will temporarily use the status bar
-            // to display the message clearly for a few seconds.
             const originalText = statusMessage.textContent;
             const originalClasses = Array.from(statusMessage.classList).filter(c => c.startsWith('text-'));
 
             statusMessage.textContent = `${title}: ${message}`;
-
             let color = 'text-blue-600';
             if (type === 'error') color = 'text-red-600';
             if (type === 'warning') color = 'text-yellow-600';
-
             statusMessage.classList.remove(...originalClasses);
             statusMessage.classList.add(color);
 
@@ -578,10 +539,8 @@
             }, 5000);
         }
 
-        // =========================================================
         // == DATA PERSISTENCE (LOCAL STORAGE) =====================
-        // =========================================================
-
+  
         /**
          * Get today's date key (YYYY-MM-DD)
          */
@@ -623,9 +582,9 @@
                 });
             }
             
-            // If today's entry was found but steps is now 0, ensure it's updated or removed if preferred (we keep it updated)
-
-            localStorage.setItem('stepHistory', JSON.stringify(newHistory));
+            // CRITICAL FIX: This line saves the entire history array back to storage.
+            localStorage.setItem('stepHistory', JSON.stringify(newHistory)); 
+            
             renderHistory();
         }
         
